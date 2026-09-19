@@ -1,0 +1,47 @@
+SOC Incident Ticket: Advanced Fee Fraud & Sender Spoofing Analysis
+
+**Ticket ID:** INC-PHISH-002
+**Date:** 10.9.2026
+**Analyst:** Selma Oguz
+
+SECTION 1: Incident Summary
+
+
+On August 2, 2023, an email was detected exhibiting classic characteristics of Advanced Fee Fraud (often referred to as a 419 Scam) or targeted spam. The attacker utilized sender spoofing techniques, making the email appear as if it was sent by "Mr Richard Owen" using the address `shore@suksapan.or.th`. Notably, the sender and receiver addresses were identical, a common technique used to bypass rudimentary spam filters and hide the actual target list.
+
+**Analyst Observations & Red Flags:**
+* **Reply-To Anomaly (Critical):** While the sender is spoofed as a `.th` (Thailand) organization, the `Reply-To` header is set to a free webmail account (`globalmeritexperts@gmail.com`). This is the primary mechanism of the attack: the threat actor does not have access to the spoofed domain and relies on the victim replying to the Gmail address to initiate the scam.
+* **Geographical & Infrastructure Mismatch:** The originating IP (`102.69.139.111`) belongs to a hosting provider in Africa (Connected Space cc). This completely contradicts the expected geographic origin of a `.th` (Thailand) domain.
+* **Email Authentication Failures:** The spoofed domain (`suksapan.or.th`) lacks a DMARC record and utilizes a soft-fail SPF record (`~all`). This weak security posture makes the domain highly susceptible to spoofing.
+
+**Impact Assessment:** 
+No malicious payloads (URLs or attachments) were included in the delivery phase. The attack relies entirely on social engineering (recipient replying to the email). 
+
+Email Artifacts (Observables)
+
+* **Sender Name:** Mr Richard Owen
+* **Sending Address (Spoofed):** `shore[@]suksapan[.]or[.]th`
+* **Reply-To (Attacker Controlled):** `globalmeritexperts[@]gmail[.]com`
+* **Originating IP:** `102[.]69[.]139[.]111`
+* **Date and Time:** Wed, 02 Aug 2023 13:47:50 +0100
+* **SPF Record:** `v=spf1 mx include:idc.cattelecom.com ~all`
+* **DMARC Record:** No DMARC Record found
+* **Attachments / URLs:** N/A
+
+SECTION 2: Artifact Analysis
+
+* **Domain Vulnerability:** The absence of a DMARC policy allows threat actors to easily forge the `From` header without the email being automatically rejected by receiving Mail Transfer Agents 
+* **IP Reputation:** The IP `102.69.139.111` is owned by Connected Space cc (Africa). The geographic mismatch between the sender domain (Thailand) and the IP (Africa) confirms the spoofing activity
+* **Modus Operandi:** Because there are no attachments or links, automated sandboxes and URL scanners will mark this email as "clean". The threat actor bypasses technical controls to manipulate the human element directly.
+
+SECTION 3: Suggested Defensive Measures
+
+
+* **Declaration:** **True Positive – Advanced Fee Fraud / Scam (Social Engineering)**
+
+* **Block the Reply-To Address:** `globalmeritexperts[@]gmail[.]com` *(Critical: This blocks the attacker's communication channel).*
+* **Block the Originating IP:** `102[.]69[.]139[.]111` *(Recommended, as this infrastructure is actively being used to originate spoofed spam).*
+* **Email Gateway Tuning:** Implement stricter DMARC verification policies. Quarantine or flag external emails that fail explicit SPF/DKIM alignment, especially those originating from foreign infrastructure.
+
+***
+**Disclaimer:** *This ticket is based on a real-world phishing sample analyzed within a controlled lab environment for educational and portfolio demonstration purposes.*
